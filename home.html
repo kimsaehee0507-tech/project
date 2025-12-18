@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 융합 빅데이터 - 통합 웹 서비스</title>
+    <style>
+        /* [1] 디자인 스타일 (CSS) */
+        :root {
+            --naver-green: #03c75a;  /* 네이버 브랜드 컬러 */
+            --melon-green: #00cd3c;  /* 멜론 브랜드 컬러 */
+            --bg-color: #f0f2f5;     /* 전체 배경색 */
+            --card-bg: #ffffff;      /* 카드 배경색 */
+            --text-main: #333;       /* 진한 글자 */
+            --text-sub: #888;        /* 연한 글자 */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 스마트폰 화면 같은 컨테이너 */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: 700px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* === 메인 메뉴 화면 === */
+        .main-menu {
+            padding: 40px 30px;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-area { margin-bottom: 40px; margin-top: 20px; }
+        .logo-area h1 { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 5px; }
+        .logo-area span { font-size: 32px; } /* 로켓 이모지 크기 */
+
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1; /* 남은 공간 차지 */
+        }
+
+        .menu-btn {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            background-color: #f9f9f9;
+        }
+
+        /* 버튼별 색상 (네이버/멜론) */
+        .naver-style { color: var(--naver-green); border-left: 5px solid var(--naver-green); }
+        .melon-style { color: var(--melon-green); border-left: 5px solid var(--melon-green); }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #ccc;
+            padding-bottom: 20px;
+        }
+
+        /* === 서브 페이지 화면 (공통) === */
+        .sub-page {
+            display: none; /* 기본적으로 숨김 */
+            flex-direction: column;
+            height: 100%;
+            background: white;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-main);
+            padding: 5px;
+        }
+
+        .page-title { font-weight: bold; font-size: 18px; }
+
+        .content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* 기능별 내부 스타일 */
+        .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        .search-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        .search-btn { background: #333; color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; }
+        
+        /* 리스트 스타일 */
+        .list-item { padding: 15px 0; border-bottom: 1px solid #f5f5f5; }
+        .list-item h3 { font-size: 16px; margin-bottom: 5px; }
+        .list-item p { font-size: 13px; color: #888; }
+        .rank-badge { display: inline-block; width: 24px; font-weight: bold; }
+        .rank-up { color: red; font-size: 12px; margin-left: 5px; }
+        
+        /* 테이블 스타일 */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 12px; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        td { padding: 12px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
+        .album-art { width: 40px; height: 40px; background: #eee; border-radius: 6px; display: inline-block; vertical-align: middle; margin-right: 10px; }
+
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div id="main-view" class="main-menu">
+            <div class="logo-area">
+                <span>🚀</span>
+                <h1>통합 웹 서비스 메뉴</h1>
+            </div>
+
+            <div class="menu-list">
+                <button class="menu-btn naver-style" onclick="showPage('page1')">
+                    🍽️ 네이버 맛집 블로그 검색
+                </button>
+                <button class="menu-btn naver-style" onclick="showPage('page2')">
+                    📊 맛집 검색어 순위
+                </button>
+
+                <button class="menu-btn melon-style" onclick="showPage('page3')">
+                    🎵 멜론 실시간 차트 보기
+                </button>
+                <button class="menu-btn melon-style" onclick="showPage('page4')">
+                    🎤 멜론 DB 가수 검색
+                </button>
+                <button class="menu-btn melon-style" onclick="showPage('page5')">
+                    👑 차트 점령 가수 랭킹 (곡 수)
+                </button>
+            </div>
+
+            <div class="footer">
+                AI응용빅데이터 프로그램 - 도라에몽
+            </div>
+        </div>
+
+
+        <div id="page1" class="sub-page">
+            <div class="header">
+                <button class="back-btn" onclick="goHome()">←</button>
+                <span class="page-title" style="color:var(--naver-green)">맛집 블로그 검색</span>
+            </div>
+            <div class="content">
+                <div class="input-group">
+                    <input type="text" class="search-input" placeholder="지역이나 메뉴 입력">
+                    <button class="search-btn" style="background:var(--naver-green)">검색</button>
+                </div>
+                <div class="list-item">
+                    <h3>🍝 연남동 숨은 파스타 맛집 TOP 5</h3>
+                    <p>블로그 > 먹방요정 | 2025.12.18</p>
+                </div>
+                <div class="list-item">
+                    <h3>🥩 강남역 가성비 고기집 추천</h3>
+                    <p>블로그 > 직장인 김씨 | 2025.12.17</p>
+                </div>
+                <div class="list-item">
+                    <h3>☕ 성수동 분위기 좋은 카페 모음</h3>
+                    <p>블로그 > 카페투어 | 2025.12.16</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page2" class="sub-page">
+            <div class="header">
+                <button class="back-btn" onclick="goHome()">←</button>
+                <span class="page-title" style="color:var(--naver-green)">실시간 검색어 순위</span>
+            </div>
+            <div class="content">
+                <p style="font-size:12px; color:#888; margin-bottom:15px;">2025.12.18 14:00 기준</p>
+                <div class="list-item"><span class="rank-badge">1</span> 마라탕 <span class="rank-up">▲</span></div>
+                <div class="list-item"><span class="rank-badge">2</span> 탕후루 <span class="rank-up">-</span></div>
+                <div class="list-item"><span class="rank-badge">3</span> 방어회 <span class="rank-up">▲</span></div>
+                <div class="list-item"><span class="rank-badge">4</span> 딸기 뷔페 <span class="rank-up">▼</span></div>
+                <div class="list-item"><span class="rank-badge">5</span> 크리스마스 케이크 <span class="rank-up">new</span></div>
+            </div>
+        </div>
+
+        <div id="page3" class="sub-page">
+            <div class="header">
+                <button class="back-btn" onclick="goHome()">←</button>
+                <span class="page-title" style="color:var(--melon-green)">멜론 실시간 차트</span>
+            </div>
+            <div class="content">
+                <table>
+                    <thead><tr><th width="40">순위</th><th>곡 정보</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td><div class="album-art"></div>Love Lee<br><span style="color:#888; font-size:12px;">AKMU</span></td></tr>
+                        <tr><td>2</td><td><div class="album-art"></div>Fry's Dream<br><span style="color:#888; font-size:12px;">AKMU</span></td></tr>
+                        <tr><td>3</td><td><div class="album-art"></div>Seven<br><span style="color:#888; font-size:12px;">정국 (BTS)</span></td></tr>
+                        <tr><td>4</td><td><div class="album-art"></div>Super Shy<br><span style="color:#888; font-size:12px;">NewJeans</span></td></tr>
+                        <tr><td>5</td><td><div class="album-art"></div>ETA<br><span style="color:#888; font-size:12px;">NewJeans</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="page4" class="sub-page">
+            <div class="header">
+                <button class="back-btn" onclick="goHome()">←</button>
+                <span class="page-title" style="color:var(--melon-green)">가수 DB 검색</span>
+            </div>
+            <div class="content">
+                <div class="input-group">
+                    <input type="text" class="search-input" placeholder="가수 이름 입력">
+                    <button class="search-btn" style="background:var(--melon-green)">검색</button>
+                </div>
+                <div style="text-align:center; padding:30px; color:#ccc;">
+                    가수 이름을 검색해보세요!
+                </div>
+            </div>
+        </div>
+
+        <div id="page5" class="sub-page">
+            <div class="header">
+                <button class="back-btn" onclick="goHome()">←</button>
+                <span class="page-title" style="color:var(--melon-green)">차트 최다 진입 가수</span>
+            </div>
+            <div class="content">
+                <h3 style="margin-bottom:20px;">TOP 100 차트 점유율</h3>
+                
+                <div class="list-item" style="display:flex; justify-content:space-between;">
+                    <div><span class="rank-badge">1</span> 임영웅</div>
+                    <div style="font-weight:bold; color:var(--melon-green)">14곡</div>
+                </div>
+                <div class="list-item" style="display:flex; justify-content:space-between;">
+                    <div><span class="rank-badge">2</span> NewJeans</div>
+                    <div style="font-weight:bold; color:var(--melon-green)">8곡</div>
+                </div>
+                <div class="list-item" style="display:flex; justify-content:space-between;">
+                    <div><span class="rank-badge">3</span> 아이브 (IVE)</div>
+                    <div style="font-weight:bold; color:var(--melon-green)">6곡</div>
+                </div>
+                <div class="list-item" style="display:flex; justify-content:space-between;">
+                    <div><span class="rank-badge">4</span> 르세라핌</div>
+                    <div style="font-weight:bold; color:var(--melon-green)">5곡</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // [2] 화면 전환 스크립트 (JS)
+        
+        // 특정 페이지 보여주기
+        function showPage(pageId) {
+            document.getElementById('main-view').style.display = 'none'; // 메인 숨김
+            
+            // 모든 서브페이지 숨김 (초기화)
+            const pages = document.querySelectorAll('.sub-page');
+            pages.forEach(p => p.style.display = 'none');
+
+            // 선택한 페이지만 보임
+            document.getElementById(pageId).style.display = 'flex';
+        }
+
+        // 메인으로 돌아가기
+        function goHome() {
+            const pages = document.querySelectorAll('.sub-page');
+            pages.forEach(p => p.style.display = 'none'); // 서브페이지 다 숨김
+            
+            document.getElementById('main-view').style.display = 'flex'; // 메인 보임
+        }
+    </script>
+
+</body>
+</html>
